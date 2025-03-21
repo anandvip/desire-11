@@ -4,12 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Desire Tracker</title>
-  <!-- Preconnect and preload Google Fonts so they are available on load -->
+  <!-- Preconnect and preload Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Pacifico&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    /* Define a CSS variable for the main font family */
+    /* CSS Variables */
     :root {
       --main-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       --primary-color: #667eea;
@@ -27,15 +28,23 @@
       --shadow-lg: 0 12px 24px rgba(0,0,0,0.15);
       --transition: all 0.3s ease;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--main-font); }
+    /* Base styles */
+    * {
+      margin: 0; padding: 0; box-sizing: border-box; font-family: var(--main-font);
+    }
     body {
       min-height: 100vh;
       background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-      padding: 20px; color: var(--text-medium); line-height: 1.6;
-      transition: var(--transition);
+      padding: 20px; color: var(--text-medium); line-height: 1.6; transition: var(--transition);
     }
     body.dark {
-      background: #121212;
+      background: #121212; color: #e0e0e0;
+    }
+    /* Override heading colors in dark mode */
+    body.dark h1,
+    body.dark h3,
+    body.dark .modal-title,
+    body.dark .desire-card h3 {
       color: #e0e0e0;
     }
     .container {
@@ -53,9 +62,10 @@
     h1::after {
       content: ''; position: absolute; bottom: 0; left: 50%;
       transform: translateX(-50%); width: 100px; height: 4px;
-      background: linear-gradient(to right, var(--primary-color), var(--secondary-color)); border-radius: 2px;
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+      border-radius: 2px;
     }
-    /* User Info and Theme Controls */
+    /* User Info & Theme Controls */
     .user-info {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.8);
@@ -75,8 +85,7 @@
     }
     .theme-controls select, .theme-controls button {
       padding: 8px 12px; border: none; border-radius: var(--border-radius);
-      font-size: 14px; cursor: pointer; background: var(--light-gray);
-      transition: var(--transition);
+      font-size: 14px; cursor: pointer; background: var(--light-gray); transition: var(--transition);
     }
     .theme-controls select:hover, .theme-controls button:hover {
       background: var(--accent-hover); color: white;
@@ -110,7 +119,7 @@
       outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
     }
     textarea { min-height: 120px; resize: vertical; }
-    /* Desires List and Cards */
+    /* Desires List & Cards */
     .desires-container { display: flex; flex-direction: column; gap: 20px; }
     .search-bar { display: flex; margin-bottom: 20px; position: relative; }
     .search-input {
@@ -123,6 +132,10 @@
       font-size: 14px; cursor: pointer; transition: var(--transition);
     }
     .filter-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+    /* Added Archived filter button */
+    .filters button[data-filter="archived"] {
+      background: #ccc;
+    }
     .desires-list {
       display: grid; gap: 20px; max-height: 600px; overflow-y: auto; padding-right: 10px;
     }
@@ -141,6 +154,7 @@
       margin-bottom: 10px; font-size: 1.4em; color: var(--text-dark);
       display: flex; align-items: center; gap: 10px;
     }
+    body.dark .desire-card h3 { color: #e0e0e0; }
     .desire-card p { color: var(--text-medium); margin-bottom: 15px; }
     .card-footer {
       display: flex; justify-content: space-between; align-items: center;
@@ -165,6 +179,11 @@
     .delete-btn:hover { color: var(--danger-color); }
     .edit-btn:hover { color: var(--primary-color); }
     .grateful-btn:hover { color: var(--accent-color); }
+    /* If desire is archived, show Activate button */
+    .activate-btn {
+      background: none; border: none; font-size: 16px; cursor: pointer; color: var(--accent-color);
+      transition: var(--transition);
+    }
     .status-count {
       display: flex; justify-content: space-around; margin: 30px 0;
     }
@@ -308,6 +327,7 @@
           <button class="filter-btn" data-filter="high">High Priority</button>
           <button class="filter-btn" data-filter="medium">Medium Priority</button>
           <button class="filter-btn" data-filter="low">Low Priority</button>
+          <button class="filter-btn" data-filter="archived">Archived</button>
         </div>
         <div class="desires-list" id="desiresList">
           <!-- Desire cards will be rendered here -->
@@ -487,9 +507,7 @@
     if (storedFont !== 'default') {
       document.documentElement.style.setProperty('--main-font', storedFont);
       fontSelect.value = storedFont;
-    } else {
-      fontSelect.value = 'default';
-    }
+    } else { fontSelect.value = 'default'; }
     const storedPalette = localStorage.getItem('palette') || 'default';
     paletteSelect.value = storedPalette;
     applyPalette(storedPalette);
@@ -640,14 +658,18 @@
     const filterDesires = (filter) => {
       desiresList.innerHTML = '';
       let filtered = desiresData;
-      const term = searchInput.value.toLowerCase();
-      if (term) {
-        filtered = filtered.filter(d =>
-          d.title.toLowerCase().includes(term) ||
-          (d.description && d.description.toLowerCase().includes(term))
-        );
+      if (filter === 'archived') {
+        filtered = filtered.filter(d => d.grateful === true);
+      } else {
+        const term = searchInput.value.toLowerCase();
+        if (term) {
+          filtered = filtered.filter(d =>
+            d.title.toLowerCase().includes(term) ||
+            (d.description && d.description.toLowerCase().includes(term))
+          );
+        }
+        if (filter !== 'all') { filtered = filtered.filter(d => d.priority === filter); }
       }
-      if (filter !== 'all') { filtered = filtered.filter(d => d.priority === filter); }
       filtered.forEach(desire => {
         const card = document.createElement('div');
         card.className = `desire-card ${desire.priority}`;
@@ -666,7 +688,7 @@
           <h3><i class="fas ${categoryIcon}"></i> ${desire.title}</h3>
           <p>${desire.description || 'No description provided.'}</p>
           ${targetDate ? `<p><i class="fas fa-calendar-alt"></i> Target: ${targetDate}</p>` : ''}
-          ${desire.grateful ? `<p class="grateful-badge"><i class="fas fa-heart"></i> Grateful</p>` : ''}
+          ${desire.grateful ? `<p class="grateful-badge"><i class="fas fa-heart"></i> Archived</p>` : ''}
           ${desire.grateful && desire.gratitudeNote ? `<p><em>"${desire.gratitudeNote}"</em></p>` : ''}
           <div class="card-footer">
             <span class="priority-badge priority-${desire.priority}">
@@ -675,7 +697,11 @@
             <div class="card-actions">
               <button class="icon-btn edit-btn" title="Edit"><i class="fas fa-edit"></i></button>
               <button class="icon-btn delete-btn" title="Delete"><i class="fas fa-trash"></i></button>
-              ${!desire.grateful ? `<button class="icon-btn grateful-btn" title="Express Gratitude"><i class="fas fa-heart"></i></button>` : ''}
+              ${
+                desire.grateful
+                  ? `<button class="icon-btn activate-btn" title="Activate">Activate</button>`
+                  : `<button class="icon-btn grateful-btn" title="Express Gratitude"><i class="fas fa-heart"></i></button>`
+              }
             </div>
           </div>
           <small class="date-added">Added: ${addedDate}</small>
@@ -684,6 +710,12 @@
         const currentUser = auth.currentUser;
         card.querySelector('.delete-btn').addEventListener('click', () => { if (currentUser) deleteDesire(currentUser.uid, desire.id); });
         card.querySelector('.edit-btn').addEventListener('click', () => { if (currentUser) openEditModal(desire); });
+        const activateBtn = card.querySelector('.activate-btn');
+        if (activateBtn) {
+          activateBtn.addEventListener('click', () => {
+            if (currentUser) updateDesire(currentUser.uid, desire.id, { grateful: false, gratitudeNote: "" });
+          });
+        }
         const gratefulBtn = card.querySelector('.grateful-btn');
         if (gratefulBtn) {
           gratefulBtn.addEventListener('click', () => { if (currentUser) openGratitudeModal(desire); });
