@@ -4,12 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Desire Tracker</title>
-  <!-- Google Fonts for vibrant options -->
+  <!-- Preconnect and preload Google Fonts so they are available on load -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Pacifico&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    /* Base styles and CSS variables */
+    /* Define a CSS variable for the main font family */
     :root {
+      --main-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       --primary-color: #667eea;
       --secondary-color: #764ba2;
       --accent-color: #48bb78;
@@ -25,7 +27,7 @@
       --shadow-lg: 0 12px 24px rgba(0,0,0,0.15);
       --transition: all 0.3s ease;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--main-font); }
     body {
       min-height: 100vh;
       background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
@@ -77,8 +79,7 @@
       transition: var(--transition);
     }
     .theme-controls select:hover, .theme-controls button:hover {
-      background: var(--accent-hover);
-      color: white;
+      background: var(--accent-hover); color: white;
     }
     /* Button Styles */
     .btn {
@@ -479,19 +480,20 @@
       }
     };
 
-    // Load stored theme, font and palette from localStorage
+    // Load stored preferences
     const storedTheme = localStorage.getItem('theme') || 'light';
     if (storedTheme === 'dark') document.body.classList.add('dark');
     const storedFont = localStorage.getItem('font') || 'default';
     if (storedFont !== 'default') {
-      document.body.style.fontFamily = storedFont;
+      document.documentElement.style.setProperty('--main-font', storedFont);
       fontSelect.value = storedFont;
-    } else { fontSelect.value = 'default'; }
+    } else {
+      fontSelect.value = 'default';
+    }
     const storedPalette = localStorage.getItem('palette') || 'default';
     paletteSelect.value = storedPalette;
     applyPalette(storedPalette);
 
-    // Function to apply a color palette
     function applyPalette(paletteName) {
       const palette = palettes[paletteName];
       if (palette) {
@@ -513,9 +515,9 @@
     fontSelect.addEventListener('change', () => {
       const newFont = fontSelect.value;
       if (newFont === 'default') {
-        document.body.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+        document.documentElement.style.setProperty('--main-font', "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif");
       } else {
-        document.body.style.fontFamily = newFont;
+        document.documentElement.style.setProperty('--main-font', newFont);
       }
       localStorage.setItem('font', newFont);
     });
