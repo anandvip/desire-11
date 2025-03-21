@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Desire Tracker</title>
+  <!-- Google Fonts for vibrant font options -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Pacifico&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* Base styles */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    :root {
+      --primary-color: #667eea;
+      --secondary-color: #764ba2;
+      --accent-color: #48bb78;
+      --accent-hover: #38a169;
+      --danger-color: #f56565;
+      --danger-hover: #c53030;
+      --light-gray: #e2e8f0;
+      --text-dark: #2d3748;
+      --text-medium: #4a5568;
+      --border-radius: 12px;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+      --shadow-md: 0 8px 16px rgba(0,0,0,0.1);
+      --shadow-lg: 0 12px 24px rgba(0,0,0,0.15);
+      --transition: all 0.3s ease;
+    }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      padding: 20px; color: var(--text-medium); line-height: 1.6;
+    }
+    .container {
+      max-width: 1000px; margin: 20px auto;
+      background: rgba(255,255,255,0.95); border-radius: var(--border-radius);
+      padding: 30px; box-shadow: var(--shadow-lg); backdrop-filter: blur(10px);
+    }
+    h1 {
+      color: var(--text-dark); text-align: center;
+      margin-bottom: 30px; font-size: 2.8em; font-weight: 700; position: relative; padding-bottom: 15px;
+    }
+    h1::after {
+      content: ''; position: absolute; bottom: 0; left: 50%;
+      transform: translateX(-50%); width: 100px; height: 4px;
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color)); border-radius: 2px;
+    }
+    /* User info and theme controls */
+    .user-info {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.8);
+      border-radius: var(--border-radius); box-shadow: var(--shadow-sm);
+    }
+    .user-profile { display: flex; align-items: center; gap: 15px; }
+    .user-avatar {
+      width: 50px; height: 50px; border-radius: 50%; background-color: var(--light-gray);
+      display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--text-medium);
+    }
+    .user-name { font-weight: 600; font-size: 18px; }
+    .auth-buttons { display: flex; gap: 15px; }
+    /* Theme controls */
+    .theme-controls {
+      display: flex; justify-content: flex-end; gap: 15px; margin-bottom: 15px;
+    }
+    /* Button styles */
+    .btn {
+      padding: 12px 24px; border: none; border-radius: var(--border-radius);
+      font-size: 16px; font-weight: 600; cursor: pointer;
+      transition: var(--transition); display: flex; align-items: center; gap: 8px;
+    }
+    .btn-primary { background-color: var(--accent-color); color: white; }
+    .btn-primary:hover { background-color: var(--accent-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .btn-danger { background-color: var(--danger-color); color: white; }
+    .btn-danger:hover { background-color: var(--danger-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .btn-secondary { background-color: var(--primary-color); color: white; }
+    .btn-secondary:hover { background-color: #5a67d8; transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    /* Dashboard layout */
+    .dashboard { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+    @media (max-width:768px){ .dashboard { grid-template-columns: 1fr; } }
+    .form-container {
+      background: white; padding: 25px; border-radius: var(--border-radius); box-shadow: var(--shadow-md);
+    }
+    .form-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    label { font-weight: 600; color: var(--text-medium); display: flex; align-items: center; gap: 8px; }
+    input, textarea, select {
+      padding: 12px 15px; border: 2px solid var(--light-gray); border-radius: var(--border-radius);
+      font-size: 16px; transition: var(--transition);
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+    }
+    textarea { min-height: 120px; resize: vertical; }
+    /* Desires list and cards */
+    .desires-container { display: flex; flex-direction: column; gap: 20px; }
+    .search-bar { display: flex; margin-bottom: 20px; position: relative; }
+    .search-input { flex: 1; padding: 12px 15px 12px 45px; border: 2px solid var(--light-gray); border-radius: var(--border-radius); font-size: 16px; }
+    .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-medium); }
+    .filters { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
+    .filter-btn {
+      padding: 8px 16px; background: white; border: 2px solid var(--light-gray); border-radius: 20px;
+      font-size: 14px; cursor: pointer; transition: var(--transition);
+    }
+    .filter-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+    .desires-list {
+      display: grid; gap: 20px; max-height: 600px; overflow-y: auto; padding-right: 10px;
+    }
+    .desires-list::-webkit-scrollbar { width: 8px; }
+    .desires-list::-webkit-scrollbar-track { background: var(--light-gray); border-radius: 10px; }
+    .desires-list::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 10px; }
+    .desire-card {
+      background: white; border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow-sm);
+      transition: var(--transition); border-left: 5px solid #cbd5e0; position: relative;
+    }
+    .desire-card.high { border-left-color: #f56565; }
+    .desire-card.medium { border-left-color: #ed8936; }
+    .desire-card.low { border-left-color: #48bb78; }
+    .desire-card h3 {
+      margin-bottom: 10px; font-size: 1.4em; color: var(--text-dark);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .desire-card p { color: var(--text-medium); margin-bottom: 15px; }
+    .card-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--light-gray);
+    }
+    .priority-badge {
+      padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 600;
+    }
+    .priority-high { background-color: #fff5f5; color: #e53e3e; }
+    .priority-medium { background-color: #fffaf0; color: #dd6b20; }
+    .priority-low { background-color: #f0fff4; color: #38a169; }
+    .grateful-badge {
+      padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 600;
+      background-color: #e6fffa; color: #319795;
+    }
+    .card-actions { display: flex; gap: 10px; }
+    .icon-btn {
+      background: none; border: none; font-size: 18px; cursor: pointer; transition: var(--transition);
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%;
+    }
+    .icon-btn:hover { background-color: var(--light-gray); }
+    .delete-btn:hover { color: var(--danger-color); }
+    .edit-btn:hover { color: var(--primary-color); }
+    .grateful-btn:hover { color: var(--accent-color); }
+    .status-count {
+      display: flex; justify-content: space-around; margin: 30px 0;
+    }
+    .count-item {
+      text-align: center; padding: 15px; background: white; border-radius: var(--border-radius);
+      box-shadow: var(--shadow-sm); flex: 1; margin: 0 10px;
+    }
+    .count-num { font-size: 32px; font-weight: 700; color: var(--primary-color); }
+    .count-label { font-size: 16px; color: var(--text-medium); }
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px; text-align: center; background: white; border-radius: var(--border-radius);
+      box-shadow: var(--shadow-sm);
+    }
+    .empty-icon { font-size: 60px; color: var(--light-gray); margin-bottom: 20px; }
+    .empty-text { font-size: 18px; color: var(--text-medium); margin-bottom: 20px; }
+    .date-added { font-size: 14px; color: #a0aec0; }
+    /* Toast notification */
+    .toast {
+      position: fixed; bottom: 30px; right: 30px; background: #2d3748; color: white;
+      padding: 15px 25px; border-radius: var(--border-radius); box-shadow: var(--shadow-lg);
+      display: flex; align-items: center; gap: 10px; z-index: 1000; opacity: 0;
+      transform: translateY(20px); transition: var(--transition);
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast-success { background: var(--accent-color); }
+    .toast-error { background: var(--danger-color); }
+    /* Modal styles */
+    .modal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+      z-index: 1000; opacity: 0; pointer-events: none; transition: var(--transition);
+    }
+    .modal.show { opacity: 1; pointer-events: all; }
+    .modal-content {
+      background: white; border-radius: var(--border-radius); padding: 30px;
+      width: 90%; max-width: 500px; transform: scale(0.9); transition: var(--transition); box-shadow: var(--shadow-lg);
+    }
+    .modal.show .modal-content { transform: scale(1); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-title { font-size: 24px; font-weight: 700; color: var(--text-dark); }
+    .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-medium); }
+    .form-title { margin-bottom: 20px; font-size: 1.5em; color: var(--text-dark); }
+    /* Dark theme styles */
+    body.dark {
+      background: #121212; color: #e0e0e0;
+    }
+    body.dark .container {
+      background: #1e1e1e; box-shadow: 0 12px 24px rgba(0,0,0,0.5);
+    }
+    body.dark .user-info { background: rgba(50,50,50,0.8); }
+    body.dark .btn-primary { background-color: #81c784; }
+    body.dark .btn-primary:hover { background-color: #66bb6a; }
+    body.dark .btn-danger { background-color: #e57373; }
+    body.dark .btn-danger:hover { background-color: #ef5350; }
+    body.dark .btn-secondary { background-color: #455a64; }
+    body.dark .btn-secondary:hover { background-color: #37474f; }
+    body.dark .modal-content { background: #1e1e1e; color: #e0e0e0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✨ Desire Tracker</h1>
+    <div class="user-info" id="userInfo">
+      <div class="user-profile" id="userProfile" style="display:none;">
+        <div class="user-avatar" id="userAvatar"><i class="fas fa-user"></i></div>
+        <div>
+          <div class="user-name" id="userName">Guest</div>
+          <div class="user-email" id="userEmail"></div>
+        </div>
+      </div>
+      <div class="auth-buttons">
+        <button id="signInBtn" class="btn btn-primary"><i class="fab fa-google"></i> Sign in with Google</button>
+        <button id="signOutBtn" class="btn btn-danger" style="display:none;"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+      </div>
+    </div>
+    <!-- Theme controls -->
+    <div class="theme-controls" id="themeControls">
+      <button id="themeToggle" class="btn btn-secondary"><i class="fas fa-adjust"></i> Toggle Theme</button>
+      <select id="fontSelect" class="btn">
+        <option value="default">Default Font</option>
+        <option value="'Pacifico', cursive">Pacifico</option>
+        <option value="'Montserrat', sans-serif">Montserrat</option>
+        <option value="'Roboto', sans-serif">Roboto</option>
+      </select>
+    </div>
+    <div class="status-count" id="statusCount" style="display:none;">
+      <div class="count-item">
+        <div class="count-num" id="totalCount">0</div>
+        <div class="count-label">Total Desires</div>
+      </div>
+      <div class="count-item">
+        <div class="count-num" id="highCount">0</div>
+        <div class="count-label">High Priority</div>
+      </div>
+      <div class="count-item">
+        <div class="count-num" id="mediumCount">0</div>
+        <div class="count-label">Medium Priority</div>
+      </div>
+      <div class="count-item">
+        <div class="count-num" id="lowCount">0</div>
+        <div class="count-label">Low Priority</div>
+      </div>
+    </div>
+    <div class="dashboard" id="dashboard" style="display:none;">
+      <div class="form-container">
+        <h2 class="form-title">Add New Desire</h2>
+        <form id="desireForm">
+          <div class="form-group">
+            <label for="desireTitle"><i class="fas fa-star"></i> What's your desire?</label>
+            <input type="text" id="desireTitle" placeholder="Enter your desire..." required>
+          </div>
+          <div class="form-group">
+            <label for="desireDescription"><i class="fas fa-align-left"></i> Description</label>
+            <textarea id="desireDescription" placeholder="Describe your desire..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="desireCategory"><i class="fas fa-tag"></i> Category</label>
+            <select id="desireCategory">
+              <option value="personal">Personal</option>
+              <option value="career">Career</option>
+              <option value="health">Health</option>
+              <option value="financial">Financial</option>
+              <option value="relationship">Relationship</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="desirePriority"><i class="fas fa-flag"></i> Priority Level</label>
+            <select id="desirePriority">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="targetDate"><i class="fas fa-calendar"></i> Target Date (Optional)</label>
+            <input type="date" id="targetDate">
+          </div>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Desire</button>
+        </form>
+      </div>
+      <div class="desires-container">
+        <div class="search-bar">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" id="searchDesires" class="search-input" placeholder="Search your desires...">
+        </div>
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="high">High Priority</button>
+          <button class="filter-btn" data-filter="medium">Medium Priority</button>
+          <button class="filter-btn" data-filter="low">Low Priority</button>
+        </div>
+        <div class="desires-list" id="desiresList">
+          <!-- Desire cards will be rendered here -->
+        </div>
+      </div>
+    </div>
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon"><i class="fas fa-sparkles"></i></div>
+      <h3 class="empty-text">Sign in to start tracking your desires</h3>
+      <button id="signInBtnEmpty" class="btn btn-primary pulse"><i class="fab fa-google"></i> Sign in with Google</button>
+    </div>
+  </div>
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage">Operation successful!</span>
+  </div>
+  <!-- Edit Modal -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Desire</h3>
+        <button class="close-modal" id="closeModal">&times;</button>
+      </div>
+      <form id="editForm">
+        <input type="hidden" id="editId">
+        <div class="form-group">
+          <label for="editTitle">Desire</label>
+          <input type="text" id="editTitle" required>
+        </div>
+        <div class="form-group">
+          <label for="editDescription">Description</label>
+          <textarea id="editDescription"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="editCategory">Category</label>
+          <select id="editCategory">
+            <option value="personal">Personal</option>
+            <option value="career">Career</option>
+            <option value="health">Health</option>
+            <option value="financial">Financial</option>
+            <option value="relationship">Relationship</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editPriority">Priority</label>
+          <select id="editPriority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editTargetDate">Target Date (Optional)</label>
+          <input type="date" id="editTargetDate">
+        </div>
+        <button type="submit" class="btn btn-primary">Update Desire</button>
+      </form>
+    </div>
+  </div>
+  <!-- Gratitude Modal -->
+  <div class="modal" id="gratitudeModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Express Gratitude</h3>
+        <button class="close-modal" id="closeGratitudeModal">&times;</button>
+      </div>
+      <form id="gratitudeForm">
+        <input type="hidden" id="gratitudeId">
+        <div class="form-group">
+          <label for="gratitudeNote">Gratitude Note (Optional)</label>
+          <textarea id="gratitudeNote" placeholder="Write your gratitude note..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Mark as Grateful</button>
+      </form>
+    </div>
+  </div>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js';
+    import {
+      getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged
+    } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js';
+    import {
+      getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc,
+      query, orderBy, serverTimestamp, Timestamp
+    } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js';
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCLfBy9R_tL8WPRJpmKZMcy70OzhId9V1w",
+      authDomain: "desires-b59a7.firebaseapp.com",
+      projectId: "desires-b59a7",
+      storageBucket: "desires-b59a7.firebasestorage.app",
+      messagingSenderId: "942109661123",
+      appId: "1:942109661123:web:84f2532a442f9d49bb8f76"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    // UI Elements
+    const signInBtn = document.getElementById('signInBtn');
+    const signInBtnEmpty = document.getElementById('signInBtnEmpty');
+    const signOutBtn = document.getElementById('signOutBtn');
+    const desireForm = document.getElementById('desireForm');
+    const desiresList = document.getElementById('desiresList');
+    const userProfile = document.getElementById('userProfile');
+    const userAvatar = document.getElementById('userAvatar');
+    const userName = document.getElementById('userName');
+    const userEmail = document.getElementById('userEmail');
+    const dashboard = document.getElementById('dashboard');
+    const emptyState = document.getElementById('emptyState');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    const statusCount = document.getElementById('statusCount');
+    const totalCount = document.getElementById('totalCount');
+    const highCount = document.getElementById('highCount');
+    const mediumCount = document.getElementById('mediumCount');
+    const lowCount = document.getElementById('lowCount');
+    const searchInput = document.getElementById('searchDesires');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const editModal = document.getElementById('editModal');
+    const closeModal = document.getElementById('closeModal');
+    const editForm = document.getElementById('editForm');
+    const gratitudeModal = document.getElementById('gratitudeModal');
+    const closeGratitudeModal = document.getElementById('closeGratitudeModal');
+    const gratitudeForm = document.getElementById('gratitudeForm');
+    const themeToggle = document.getElementById('themeToggle');
+    const fontSelect = document.getElementById('fontSelect');
+
+    let currentFilter = 'all';
+    let desiresData = [];
+
+    // Theme & Font preferences (load from localStorage)
+    const storedTheme = localStorage.getItem('theme') || 'light';
+    if (storedTheme === 'dark') document.body.classList.add('dark');
+    const storedFont = localStorage.getItem('font') || 'default';
+    if (storedFont !== 'default') {
+      document.body.style.fontFamily = storedFont;
+      fontSelect.value = storedFont;
+    } else {
+      fontSelect.value = 'default';
+    }
+
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      const newTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
+      localStorage.setItem('theme', newTheme);
+    });
+
+    fontSelect.addEventListener('change', () => {
+      const newFont = fontSelect.value;
+      if (newFont === 'default') {
+        document.body.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+      } else {
+        document.body.style.fontFamily = newFont;
+      }
+      localStorage.setItem('font', newFont);
+    });
+
+    // Utility functions
+    const showToast = (message, type = 'success') => {
+      toastMessage.textContent = message;
+      toast.className = `toast ${type === 'success' ? 'toast-success' : 'toast-error'} show`;
+      setTimeout(() => { toast.className = 'toast'; }, 3000);
+    };
+
+    const formatDate = (timestamp) => {
+      if (!timestamp) return '';
+      const date = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    };
+
+    // CRUD functions
+    const addDesire = async (userId, desireData) => {
+      try {
+        desireData.createdAt = serverTimestamp();
+        desireData.grateful = desireData.grateful || false;
+        if (desireData.targetDate) { desireData.targetDate = new Date(desireData.targetDate); }
+        await addDoc(collection(db, `users/${userId}/desires`), desireData);
+        await renderDesires(userId);
+        showToast('Desire added successfully!');
+      } catch (error) {
+        console.error('Error adding desire:', error);
+        showToast('Error adding desire', 'error');
+      }
+    };
+
+    const deleteDesire = async (userId, id) => {
+      try {
+        await deleteDoc(doc(db, `users/${userId}/desires`, id));
+        await renderDesires(userId);
+        showToast('Desire deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting desire:', error);
+        showToast('Error deleting desire', 'error');
+      }
+    };
+
+    const updateDesire = async (userId, id, updatedData) => {
+      try {
+        if (updatedData.targetDate) { updatedData.targetDate = new Date(updatedData.targetDate); }
+        await updateDoc(doc(db, `users/${userId}/desires`, id), updatedData);
+        await renderDesires(userId);
+        showToast('Desire updated successfully!');
+      } catch (error) {
+        console.error('Error updating desire:', error);
+        showToast('Error updating desire', 'error');
+      }
+    };
+
+    // Open Edit Modal
+    const openEditModal = (desire) => {
+      document.getElementById('editId').value = desire.id;
+      document.getElementById('editTitle').value = desire.title;
+      document.getElementById('editDescription').value = desire.description || '';
+      document.getElementById('editCategory').value = desire.category || 'personal';
+      document.getElementById('editPriority').value = desire.priority;
+      if (desire.targetDate) {
+        const date = desire.targetDate instanceof Timestamp ? desire.targetDate.toDate() : new Date(desire.targetDate);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        document.getElementById('editTargetDate').value = `${year}-${month}-${day}`;
+      } else {
+        document.getElementById('editTargetDate').value = '';
+      }
+      editModal.classList.add('show');
+    };
+
+    // Open Gratitude Modal
+    const openGratitudeModal = (desire) => {
+      document.getElementById('gratitudeId').value = desire.id;
+      document.getElementById('gratitudeNote').value = desire.gratitudeNote || '';
+      gratitudeModal.classList.add('show');
+    };
+
+    // Render Desires & apply filtering
+    const renderDesires = async (userId) => {
+      try {
+        desiresList.innerHTML = '';
+        const q = query(collection(db, `users/${userId}/desires`), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        let desires = [], countHigh = 0, countMedium = 0, countLow = 0;
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          desires.push({ id: docSnap.id, ...data });
+          if (data.priority === 'high') countHigh++;
+          else if (data.priority === 'medium') countMedium++;
+          else if (data.priority === 'low') countLow++;
+        });
+        desiresData = desires;
+        totalCount.textContent = desires.length;
+        highCount.textContent = countHigh;
+        mediumCount.textContent = countMedium;
+        lowCount.textContent = countLow;
+        filterDesires(currentFilter);
+        if (desires.length === 0) {
+          desiresList.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon"><i class="fas fa-list"></i></div>
+              <h3 class="empty-text">No desires yet. Add your first one!</h3>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error rendering desires:', error);
+        showToast('Error loading desires', 'error');
+      }
+    };
+
+    const filterDesires = (filter) => {
+      desiresList.innerHTML = '';
+      let filtered = desiresData;
+      const term = searchInput.value.toLowerCase();
+      if (term) {
+        filtered = filtered.filter(d =>
+          d.title.toLowerCase().includes(term) ||
+          (d.description && d.description.toLowerCase().includes(term))
+        );
+      }
+      if (filter !== 'all') { filtered = filtered.filter(d => d.priority === filter); }
+      filtered.forEach(desire => {
+        const card = document.createElement('div');
+        card.className = `desire-card ${desire.priority}`;
+        const addedDate = formatDate(desire.createdAt);
+        const targetDate = formatDate(desire.targetDate);
+        let categoryIcon = '';
+        switch(desire.category) {
+          case 'personal': categoryIcon = 'fa-user'; break;
+          case 'career': categoryIcon = 'fa-briefcase'; break;
+          case 'health': categoryIcon = 'fa-heart'; break;
+          case 'financial': categoryIcon = 'fa-dollar-sign'; break;
+          case 'relationship': categoryIcon = 'fa-users'; break;
+          default: categoryIcon = 'fa-tag'; break;
+        }
+        card.innerHTML = `
+          <h3><i class="fas ${categoryIcon}"></i> ${desire.title}</h3>
+          <p>${desire.description || 'No description provided.'}</p>
+          ${targetDate ? `<p><i class="fas fa-calendar-alt"></i> Target: ${targetDate}</p>` : ''}
+          ${desire.grateful ? `<p class="grateful-badge"><i class="fas fa-heart"></i> Grateful</p>` : ''}
+          ${desire.grateful && desire.gratitudeNote ? `<p><em>"${desire.gratitudeNote}"</em></p>` : ''}
+          <div class="card-footer">
+            <span class="priority-badge priority-${desire.priority}">
+              ${desire.priority.charAt(0).toUpperCase() + desire.priority.slice(1)}
+            </span>
+            <div class="card-actions">
+              <button class="icon-btn edit-btn" title="Edit"><i class="fas fa-edit"></i></button>
+              <button class="icon-btn delete-btn" title="Delete"><i class="fas fa-trash"></i></button>
+              ${!desire.grateful ? `<button class="icon-btn grateful-btn" title="Express Gratitude"><i class="fas fa-heart"></i></button>` : ''}
+            </div>
+          </div>
+          <small class="date-added">Added: ${addedDate}</small>
+        `;
+        desiresList.appendChild(card);
+        const currentUser = auth.currentUser;
+        card.querySelector('.delete-btn').addEventListener('click', () => { if (currentUser) deleteDesire(currentUser.uid, desire.id); });
+        card.querySelector('.edit-btn').addEventListener('click', () => { if (currentUser) openEditModal(desire); });
+        const gratefulBtn = card.querySelector('.grateful-btn');
+        if (gratefulBtn) {
+          gratefulBtn.addEventListener('click', () => { if (currentUser) openGratitudeModal(desire); });
+        }
+      });
+    };
+
+    // Event listeners
+    desireForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('desireTitle').value;
+      const description = document.getElementById('desireDescription').value;
+      const category = document.getElementById('desireCategory').value;
+      const priority = document.getElementById('desirePriority').value;
+      const targetDate = document.getElementById('targetDate').value;
+      const user = auth.currentUser;
+      if (user) {
+        addDesire(user.uid, { title, description, category, priority, targetDate: targetDate || null });
+      }
+      desireForm.reset();
+    });
+
+    editForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editId').value;
+      const title = document.getElementById('editTitle').value;
+      const description = document.getElementById('editDescription').value;
+      const category = document.getElementById('editCategory').value;
+      const priority = document.getElementById('editPriority').value;
+      const targetDate = document.getElementById('editTargetDate').value;
+      const user = auth.currentUser;
+      if (user) {
+        updateDesire(user.uid, id, { title, description, category, priority, targetDate: targetDate || null });
+      }
+      editModal.classList.remove('show');
+    });
+
+    gratitudeForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('gratitudeId').value;
+      const note = document.getElementById('gratitudeNote').value;
+      const user = auth.currentUser;
+      if (user) {
+        updateDesire(user.uid, id, { grateful: true, gratitudeNote: note });
+      }
+      gratitudeModal.classList.remove('show');
+    });
+
+    closeModal.addEventListener('click', () => { editModal.classList.remove('show'); });
+    closeGratitudeModal.addEventListener('click', () => { gratitudeModal.classList.remove('show'); });
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        const user = auth.currentUser;
+        if (user) filterDesires(currentFilter);
+      });
+    });
+
+    searchInput.addEventListener('input', () => {
+      const user = auth.currentUser;
+      if (user) filterDesires(currentFilter);
+    });
+
+    signInBtn.addEventListener('click', async () => {
+      try { await signInWithPopup(auth, provider); }
+      catch (error) { console.error('Sign in error:', error); showToast('Sign in failed', 'error'); }
+    });
+
+    signInBtnEmpty.addEventListener('click', async () => {
+      try { await signInWithPopup(auth, provider); }
+      catch (error) { console.error('Sign in error:', error); showToast('Sign in failed', 'error'); }
+    });
+
+    signOutBtn.addEventListener('click', async () => {
+      try { await signOut(auth); showToast('Signed out successfully'); }
+      catch (error) { console.error('Sign out error:', error); showToast('Sign out failed', 'error'); }
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        userName.textContent = user.displayName || 'User';
+        userEmail.textContent = user.email;
+        userProfile.style.display = 'flex';
+        signInBtn.style.display = 'none';
+        signOutBtn.style.display = 'block';
+        dashboard.style.display = 'grid';
+        emptyState.style.display = 'none';
+        statusCount.style.display = 'flex';
+        if (user.photoURL) {
+          userAvatar.innerHTML = `<img src="${user.photoURL}" alt="${user.displayName}" style="width:100%; height:100%; border-radius:50%;">`;
+        } else if (user.displayName) {
+          const initials = user.displayName.split(' ').map(n => n[0]).join('').toUpperCase();
+          userAvatar.innerHTML = initials;
+        } else { userAvatar.innerHTML = '<i class="fas fa-user"></i>'; }
+        renderDesires(user.uid);
+      } else {
+        userProfile.style.display = 'none';
+        signInBtn.style.display = 'block';
+        signOutBtn.style.display = 'none';
+        dashboard.style.display = 'none';
+        emptyState.style.display = 'block';
+        statusCount.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
